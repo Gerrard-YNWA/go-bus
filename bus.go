@@ -34,7 +34,7 @@ func (b *Bus) Run() {
 		go n.Spin()
 		cases[i] = reflect.SelectCase{
 			Dir:  reflect.SelectRecv,
-			Chan: reflect.ValueOf(n.OutQ),
+			Chan: reflect.ValueOf(n.outQ),
 		}
 	}
 
@@ -50,13 +50,13 @@ func (b *Bus) Run() {
 			msg := value.Interface().(*Message)
 			for _, n := range b.nodes {
 				if n.IsSubscribed(msg.Topic) {
-					n.InQ <- msg
+					n.inQ <- msg
 				}
 			}
 		} else if chosen == n {
-			msg := &Message{From: "bus", Topic: "exit"}
+			msg := &Message{From: "_bus", Topic: "exit"}
 			for _, n := range b.nodes {
-				n.InQ <- msg
+				n.inQ <- msg
 			}
 		}
 	}

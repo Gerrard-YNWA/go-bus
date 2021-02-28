@@ -17,11 +17,11 @@ func TestNodeName(t *testing.T) {
 	cases := []map[string]string{
 		{
 			"name":   "a",
-			"expect": "node-a",
+			"expect": "a",
 		},
 		{
 			"name":   "b",
-			"expect": "node-b",
+			"expect": "b",
 		},
 	}
 
@@ -110,7 +110,7 @@ func TestPublish(t *testing.T) {
 	topic := "/a"
 	data := "sss"
 	n.Publish(topic, data)
-	msg := <-n.OutQ
+	msg := <-n.outQ
 	if msg.From != n.Name() || msg.Topic != topic || data != msg.Data {
 		t.Fail()
 	}
@@ -125,7 +125,7 @@ func TestSpin(t *testing.T) {
 			"data":  "sss",
 		},
 		{
-			"from":  "bus",
+			"from":  "_bus",
 			"topic": "exit",
 			"data":  "",
 		},
@@ -134,7 +134,7 @@ func TestSpin(t *testing.T) {
 	go func() {
 		for _, v := range cases {
 			msg := buildMsg(v["from"].(string), v["topic"].(string), v["data"])
-			n.InQ <- msg
+			n.inQ <- msg
 		}
 	}()
 	n.Spin()

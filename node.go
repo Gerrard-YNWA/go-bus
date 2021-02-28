@@ -1,23 +1,19 @@
 package bus
 
-import (
-	"fmt"
-)
-
 type Node struct {
 	name      string
 	subtopics map[string]bool
-	InQ       chan *Message
-	OutQ      chan *Message
+	inQ       chan *Message
+	outQ      chan *Message
 	exit      chan struct{}
 	onMessage func(c *Node, msg *Message)
 }
 
 func NewNode(name string, onMessage func(c *Node, msg *Message)) *Node {
 	return &Node{
-		name:      fmt.Sprintf("node-%s", name),
-		InQ:       make(chan *Message, 10),
-		OutQ:      make(chan *Message, 10),
+		name:      name,
+		inQ:       make(chan *Message, 10),
+		outQ:      make(chan *Message, 10),
 		exit:      make(chan struct{}, 1),
 		subtopics: make(map[string]bool),
 		onMessage: onMessage,
@@ -69,12 +65,12 @@ func buildMsg(name, topic string, data interface{}) *Message {
 
 func (n *Node) Publish(topic string, data interface{}) {
 	msg := buildMsg(n.name, topic, data)
-	n.OutQ <- msg
+	n.outQ <- msg
 }
 
 func (n *Node) Spin() {
-	for msg := range n.InQ {
-		if msg.From == "bus" && msg.Topic == "exit" {
+	for msg := range n.inQ {
+		if msg.From == "_bus" && msg.Topic == "exit" {
 			break
 		}
 		n.onMessage(n, msg)
